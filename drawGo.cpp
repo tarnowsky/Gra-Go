@@ -81,6 +81,28 @@ void printLegend() {
 	cputs(" Gracz 2");
 }
 
+void printPoints(struct game_state_values curr_state) {
+	int y_offset = 15;
+	textcolor(TEXT_COLOR);
+	textbackground(console.background_color);
+	gotoxy(legend.x_start, legend.y_start + y_offset++);
+	cputs("== PUNKTACJA ==");
+	y_offset++;
+	gotoxy(legend.x_start, legend.y_start + y_offset++);
+	textcolor(WHITE);
+	putch(STONE_CHAR);
+	putch(SPACE);
+	textcolor(TEXT_COLOR);
+	putch(curr_state.points_player_one + '0');
+	gotoxy(legend.x_start, legend.y_start + y_offset++);
+	textcolor(BLACK);
+	putch(STONE_CHAR);
+	putch(SPACE);
+	textcolor(TEXT_COLOR);
+	putch(curr_state.points_player_two + '0');
+}
+
+
 void putCorrectCharOnBoard(int row, int col, struct game_state_values curr_state) {
 	if (col % 2 == 1) {
 		switch (curr_state.board[row - 1][(col+1)/2 - 1]) {
@@ -161,8 +183,10 @@ void printWhosTurnIsIt(struct game_state_values curr_state) {
 	putch(STONE_CHAR);
 }
 
+
 void newGameAlert() {
-	int y_offset = 1;
+	int y_offset = 0;
+	gotoxy(board.x_start, y_offset++);
 	textcolor(ALERT_COLOR);
 	textbackground(console.background_color);
 	gotoxy(board.x_start, board.y_start + board.size + y_offset++);
@@ -171,6 +195,19 @@ void newGameAlert() {
 	cputs("Wszystkie niezapisane dane zostana utracone.");
 	gotoxy(board.x_start, board.y_start + board.size + y_offset++);
 	cputs("Kontynuowac? TAK [ENTER] / NIE [ESCAPE]");
+}
+
+void suecideAlert() {
+	textcolor(ALERT_COLOR);
+	textbackground(console.background_color);
+	gotoxy(board.x_start, board.y_start + board.size + 3);
+	cputs("Ruch niedozwolony. Samobojstwo.");
+}
+
+void clrSuecide() {
+	textbackground(console.background_color);
+	gotoxy(board.x_start, board.y_start + board.size + 3);
+	cputs("                               ");
 }
 
 void clrNewGameAlert() {

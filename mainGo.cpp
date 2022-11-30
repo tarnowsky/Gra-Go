@@ -3,7 +3,7 @@
 
 int main() {
 	_setcursortype(_NOCURSOR);
-	settitle("Gra GO");
+	settitle("Michal, Tarnowski, 193324");
 	backgroundColor(LIGHTGRAY);
 	game();
 	_setcursortype(_NORMALCURSOR);

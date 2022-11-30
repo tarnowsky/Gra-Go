@@ -6,6 +6,7 @@ void game(void) {
 	printLegend();
 	new_game();
 	do {
+		printPoints(game_state);
 		printWhosTurnIsIt(game_state);
 		new_coord('x');
 		new_coord('y');
@@ -26,7 +27,33 @@ void game(void) {
 				confirm();
 				if (keyboard.enter == PRESSED) {
 					placeStone(game_state.x, game_state.y, game_state.turn);
-					updateBoard(game_state.x, game_state.y, PLACE_STONE);
+					updateBoard(game_state.x, game_state.y, PLACE_STONE, true);
+
+					int possible_kills[4][3] = {
+						{-1, -1, 0}, // góra
+						{-1, -1, 0}, // prawo
+						{-1, -1, 0}, // dó³
+						{-1, -1, 0}, // lewo
+					};
+
+					int x = XYToBoardIndex(game_state.x, 'x');
+					int y = XYToBoardIndex(game_state.y, 'y');
+;					if (moveCanKill(x,y,game_state,board,possible_kills)) {
+						int points = 0;
+						int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2];
+						for (int i = 0; i < 4 ; i++) {
+							if (possible_kills[i][0] == -1 || possible_kills[i][2] == 1) continue;
+							clrSurrounded(surrounded);
+							if (moveKills(possible_kills[i][0], possible_kills[i][1], game_state, board, surrounded, possible_kills)) {
+								for (int j = 0; surrounded[j][0] != -1; j++) {
+									updateBoard(surrounded[j][0], surrounded[j][1], REMOVE_STONE, false);
+									restoreChar(surrounded[j][0] * 2  + board.x_start, surrounded[j][1] + board.y_start, game_state);
+									points++;
+								}
+							}
+						}
+						game_state.turn == PLAYER_ONE ? game_state.points_player_one += points : game_state.points_player_two += points;
+					}
 					changeTurn();
 					game_state.x += 2;
 				}
@@ -45,13 +72,14 @@ void game(void) {
 			if (keyboard.escape != PRESSED) {
 				loadGame(file_name_load, &game_state);
 				drawBoard(game_state);
-				lastLineAlert(GREEN, WHITE, "Zaladowano pomyslnie.");
 			}
 		}
 	} while (keyboard.q != PRESSED);
 	gotoxy(1, 28);
 	textcolor(TEXT_COLOR);
 }
+
+
 
 void new_coord(char x_or_y) {
 	if (x_or_y == 'y') {
@@ -87,6 +115,10 @@ void keyboard_handle() {
 	if (saves.alert_to_clear) {
 		colorSaveLine(console.background_color);
 		saves.alert_to_clear = 0;
+	}
+	if (game_state.suecide) {
+		clrSuecide();
+		game_state.suecide = 0;
 	}
 
 	if (pressed_key == SPECIAL_CHARACTER) {
@@ -147,9 +179,10 @@ void new_game() {
 	clrPosition();
 	clrBoard();
 	drawBoard(game_state);
-	correctStartBreaths(breaths);
 	game_state.x = board.x_start;
 	game_state.y = board.y_start;
+	game_state.points_player_one = 0;
+	game_state.points_player_two = 0;
 	game_state.turn = PLAYER_ONE;
 }
 
@@ -176,32 +209,69 @@ void changeTurn() {
 	game_state.turn = (game_state.turn == PLAYER_ONE) ? PLAYER_TWO : PLAYER_ONE;
 }
 
-void updateBoard(int x, int y, UpdateBoard_actions action) {
-	x = XYToBoardIndex('x');
-	y = XYToBoardIndex('y');
+void updateBoard(int x, int y, UpdateBoard_actions action, bool is_position) {
+	if (is_position) {
+		x = XYToBoardIndex(x, 'x');
+		y = XYToBoardIndex(y, 'y');
+	}
 	switch (action) {
 	case PLACE_STONE:
 		game_state.board[y][x] = game_state.turn == PLAYER_ONE ? STONE_P1 : STONE_P2;
 		break;
+	case REMOVE_STONE:
+		game_state.board[y][x] = EMPTY;
+		break;
 	}
 }
 
-int XYToBoardIndex(char x_or_y) {
+int XYToBoardIndex(int x_y, char x_or_y) {
 	switch (x_or_y) {
 	case 'x':
-		return (game_state.x - board.x_start) / 2;
+		return (x_y - board.x_start) / 2;
 	case 'y':
-		return (game_state.y - board.y_start);
+		return (x_y - board.y_start);
 	default:
 		return -1;
 	}
 }
 
-int stoneCanBePlaced(int x, int y) {
-	switch (game_state.board[XYToBoardIndex('y')][XYToBoardIndex('x')]) {
-	case EMPTY: return 1;
-	default: return 0;
+bool stoneCanBePlaced(int x, int y) {
+	if (game_state.board[y][x] != EMPTY) {
+		return false;
 	}
+	int possible_kills[4][3] = {
+		{-1, -1, 0}, // góra
+		{-1, -1, 0}, // prawo
+		{-1, -1, 0}, // dó³
+		{-1, -1, 0}, // lewo
+	};
+	x = XYToBoardIndex(x, 'x');
+	y = XYToBoardIndex(y, 'y');
+	if (moveCanKill(x, y, game_state, board, possible_kills)) {
+		int points = 0;
+		int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2];
+		for (int i = 0; i < 4; i++) {
+			if (possible_kills[i][0] == -1 || possible_kills[i][2] == 1) continue;
+			clrSurrounded(surrounded);
+			if (moveKills(possible_kills[i][0], possible_kills[i][1], game_state, board, surrounded, possible_kills)) {
+				return true;
+			}
+		}
+	}
+	game_state.board[y][x] = (game_state.turn == PLAYER_ONE ? STONE_P1 : STONE_P2);
+	int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2];
+	clrSurrounded(surrounded);
+	game_state.turn *= -1;
+	if (moveKills(x, y, game_state, board, surrounded, possible_kills)) {
+		game_state.turn *= -1;
+		suecideAlert();
+		game_state.suecide = 1;
+		game_state.board[y][x] = EMPTY;
+		return false;
+	}
+	game_state.board[y][x] = EMPTY;
+	game_state.turn *= -1;
+	return true;
 }
 
 void clrBoard() {
@@ -264,10 +334,7 @@ void saveGame(char file_name[MAX_FILE_NAME]) {
 		for (int j = 0; j < board.size; j++)
 			fprintf(fp, "%d ", game_state.board[i][j]);
 	fclose(fp);
-	textcolor(WHITE);
-	colorSaveLine(GREEN);
-	gotoxy(1, console.height);
-	cputs("Gra zapisana pomyslnie.");
+	lastLineAlert(GREEN, WHITE, "Gra zapisana pomyslnie.");
 	saves.alert_to_clear = 1;
 }
 
@@ -292,6 +359,7 @@ void backspaceHandle(char file_name[MAX_FILE_NAME], int* x_pos, int* file_name_i
 }
 
 void loadGame(char file_name[MAX_FILE_NAME], struct game_state_values *curr_value) {
+	// DO ZROBIENIA NIE MOZESZ WPISAC NAZWY NIE ISTNIEJACEGO PLIKU
 	FILE* fp;
 	FILE** fpp = &fp;
 	fopen_s(fpp, file_name, "r");
@@ -304,32 +372,15 @@ void loadGame(char file_name[MAX_FILE_NAME], struct game_state_values *curr_valu
 	for (int i = 0; i < board.size; i++)
 		for (int j = 0; j < board.size; j++)
 			fscanf_s(fp, "%d", &(curr_value->board[i][j]));
+	lastLineAlert(GREEN, WHITE, "Zaladowano pomyslnie.");
+	saves.alert_to_clear = 1;
 	fclose(fp);
 }
 
-void correctStartBreaths(struct Breaths start_breaths[BOARD_SIZE][BOARD_SIZE]) {
-	for (int row = 0; row < board.size; row++) {
-		for (int col = 0; col < board.size; col++) {
-			if ((row == 0 && col == 0) ||
-				(row == 0 && col == board.size - 1) ||
-				(row == board.size - 1 && col == 0) ||
-				(row == board.size - 1 && col == board.size - 1)) {
-				start_breaths[row][col].black = 2;
-				start_breaths[row][col].white = 2;
-			}
-			else if (row == 0 || col == 0 || row == board.size - 1 || col == board.size - 1) {
-				start_breaths[row][col].black = 3;
-				start_breaths[row][col].white = 3;
-			}
-			else {
-				start_breaths[row][col].black = 4;
-				start_breaths[row][col].white = 4;
-			}
-			start_breaths[row][col].was_reduced_in_curr_turn = 0;
+void clrSurrounded(int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2]) {
+	for (int i = 0; i < (BOARD_SIZE * BOARD_SIZE) / 2; i++) {
+		for (int j = 0; j < 2; j++) {
+			surrounded[i][j] = -1;
 		}
 	}
-}
-
-void reduceBreaths(struct Breaths curr_breaths[BOARD_SIZE][BOARD_SIZE], int x_pos, int y_pos) {
-
 }

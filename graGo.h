@@ -1,4 +1,6 @@
 #include "conio2.h"
+#include <iostream>
+using namespace std;
 
 #ifndef GRAGO_H
 #define GRAGO_H
@@ -77,7 +79,7 @@ static enum BoardElements {
 
 static struct board_opt {
 	int size =		BOARD_SIZE;
-	int position =	RIGHT_POS;
+	int position =	LEFT_POS;
 	int color =		BOARD_COLOR;
 	int x_start =	position == RIGHT_POS ? RIGHT_POS_X_START : LEFT_POS_X_START;
 	int y_start =	Y_START;
@@ -108,8 +110,9 @@ static struct game_state_values {
 	int points_player_one =						0;
 	int points_player_two =						0;
 	int turn =									PLAYER_ONE;
-	int board[BOARD_SIZE][BOARD_SIZE] =			{};
-	int board_for_ko[BOARD_SIZE][BOARD_SIZE] =	{};
+	int board[BOARD_SIZE][BOARD_SIZE] =			{0};
+	int board_for_ko[BOARD_SIZE][BOARD_SIZE] =	{0};
+	int suecide =								0;
 } game_state;
 
 static struct Legend {
@@ -117,16 +120,12 @@ static struct Legend {
 	int y_start = Y_START - 1;
 } legend;
 
+
+
 // DO POPRAWY
 static struct Saves { 
 	int alert_to_clear = 0;
 } saves;
-
-static struct Breaths {
-	int white = 4;
-	int black = 4;
-	int was_reduced_in_curr_turn = 0;
-} breaths[BOARD_SIZE][BOARD_SIZE];
 
 // draw board on chosen console side
 void drawBoard(struct game_state_values curr_state);
@@ -144,10 +143,10 @@ void drawCursor(int x, int y, int cursor_color);
 void confirm(void);
 void placeStone(int x, int y, int turn);
 void changeTurn(void);
-void updateBoard(int x, int y, UpdateBoard_actions action);
+void updateBoard(int x, int y, UpdateBoard_actions action, bool is_position);
 void putCorrectCharOnBoard(int row, int col, struct game_state_values curr_state);
-int XYToBoardIndex(char x_or_y);
-int stoneCanBePlaced(int x, int y);
+int XYToBoardIndex(int x_y, char x_or_y);
+bool stoneCanBePlaced(int x, int y);
 void printWhosTurnIsIt(struct game_state_values curr_state);
 void newGameAlert(void);
 void clrBoard(void);
@@ -160,6 +159,21 @@ void backspaceHandle(char file_name[30], int* x_pos, int* file_name_index);
 void clrPosition(void);
 void loadGame(char file_name[MAX_FILE_NAME], struct game_state_values *curr_value);
 void lastLineAlert(int background_color, int text_color, const char* message);
-void reduceBreaths(struct Breaths curr_breaths, int x_pos, int y_pos);
-void correctStartBreaths(struct Breaths start_breaths[BOARD_SIZE][BOARD_SIZE]);
+void printPoints(struct game_state_values curr_state);
+bool moveCanKill(
+	int x,
+	int y,
+	struct game_state_values curr_state,
+	struct board_opt curr_board,
+	int possible_kills[4][3]);
+bool moveKills(
+	int x,
+	int y,
+	struct game_state_values curr_state,
+	struct board_opt curr_board,
+	int surrounded[BOARD_SIZE * BOARD_SIZE / 2][2],
+	int possible_kills[4][3]);
+void clrSurrounded(int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2]);
+void suecideAlert(void);
+void clrSuecide(void);
 #endif 
