@@ -4,8 +4,8 @@
 int main() {
 	_setcursortype(_NOCURSOR);
 	settitle("Michal, Tarnowski, 193324");
-	backgroundColor(LIGHTGRAY);
-	game();
+	g_opt = chooseGameSettings(g_opt);
+	game(g_opt);
 	_setcursortype(_NORMALCURSOR);
 	return 0;
 }

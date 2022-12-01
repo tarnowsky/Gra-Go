@@ -69,6 +69,8 @@ void printLegend() {
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
 	cputs("f: zakonczenie gry");
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
+	cputs("o: opcje");
+	gotoxy(legend.x_start, legend.y_start + y_offset++);
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
 	textcolor(WHITE);
 	putch(STONE_CHAR);
@@ -81,8 +83,9 @@ void printLegend() {
 	cputs(" Gracz 2");
 }
 
-void printPoints(struct game_state_values curr_state) {
-	int y_offset = 15;
+void printPoints(struct game_state_values curr_state, struct GameSettings curr_g_opt) {
+	int y_offset = 16;
+	char buff[4] = {};
 	textcolor(TEXT_COLOR);
 	textbackground(console.background_color);
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
@@ -93,15 +96,19 @@ void printPoints(struct game_state_values curr_state) {
 	putch(STONE_CHAR);
 	putch(SPACE);
 	textcolor(TEXT_COLOR);
-	putch(curr_state.points_player_one + '0');
+	intToString(curr_state.points_player_one, buff);
+	cputs(buff);
+	if (curr_g_opt.handicup == 1) {
+		cputs(".5");
+	}
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
 	textcolor(BLACK);
 	putch(STONE_CHAR);
 	putch(SPACE);
 	textcolor(TEXT_COLOR);
-	putch(curr_state.points_player_two + '0');
+	intToString(curr_state.points_player_two, buff);
+	cputs(buff);
 }
-
 
 void putCorrectCharOnBoard(int row, int col, struct game_state_values curr_state) {
 	if (col % 2 == 1) {
@@ -183,7 +190,6 @@ void printWhosTurnIsIt(struct game_state_values curr_state) {
 	putch(STONE_CHAR);
 }
 
-
 void newGameAlert() {
 	int y_offset = 0;
 	gotoxy(board.x_start, y_offset++);
@@ -232,8 +238,8 @@ void clrPosition() {
 }
 
 void lastLineAlert(int background_color, int text_color, const char *message) {
-	colorSaveLine(GREEN);
+	colorSaveLine(background_color);
 	gotoxy(1, console.height);
-	textcolor(WHITE);
+	textcolor(text_color);
 	cputs(message);
 }

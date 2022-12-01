@@ -2,84 +2,108 @@
 #include <stdio.h>
 
 
-void game(void) {
-	printLegend();
-	new_game();
-	do {
-		printPoints(game_state);
-		printWhosTurnIsIt(game_state);
-		new_coord('x');
-		new_coord('y');
-		print_position(game_state.x, game_state.y);
-		drawCursor(game_state.x, game_state.y, CURSOR_COLOR_NORMAL);
-		keyboard_handle();
-		if (keyboard.n == PRESSED) {
-			newGameAlert();
-			confirm();
-			if (keyboard.enter == PRESSED) {
-				new_game();
-			}
-			clrNewGameAlert();
-		}
-		if (keyboard.i == PRESSED) {
-			if (stoneCanBePlaced(game_state.x, game_state.y)) {
-				drawCursor(game_state.x, game_state.y, CURSOR_COLOR_ACTIVE);
+void game(struct GameSettings curr_g_opt) {
+	curr_g_opt.settings_chosen = 1;
+	if (keyboard.q != PRESSED) {
+		printLegend();
+		new_game(curr_g_opt);
+		do {
+			if (keyboard.q == PRESSED) break;
+			printPoints(game_state, curr_g_opt);
+			printWhosTurnIsIt(game_state);
+			new_coord('x');
+			new_coord('y');
+			print_position(game_state.x, game_state.y);
+			drawCursor(game_state.x, game_state.y, CURSOR_COLOR_NORMAL);
+			keyboard = keyboard_handle();
+			if (keyboard.n == PRESSED) {
+				newGameAlert();
 				confirm();
 				if (keyboard.enter == PRESSED) {
-					placeStone(game_state.x, game_state.y, game_state.turn);
-					updateBoard(game_state.x, game_state.y, PLACE_STONE, true);
+					new_game(curr_g_opt);
+				}
+				if (curr_g_opt.handicup != 1) clrNewGameAlert();
+			}
+			if (keyboard.i == PRESSED) {
+				if (stoneCanBePlaced(game_state.x, game_state.y)) {
+					game_state.ko_coords[0] = -1;
+					game_state.ko_coords[1] = -1;
+					drawCursor(game_state.x, game_state.y, CURSOR_COLOR_ACTIVE);
+					confirm();
+					if (keyboard.enter == PRESSED) {
+						placeStone(game_state.x, game_state.y, game_state.turn);
+						updateBoard(game_state.x, game_state.y, PLACE_STONE, true);
 
-					int possible_kills[4][3] = {
-						{-1, -1, 0}, // góra
-						{-1, -1, 0}, // prawo
-						{-1, -1, 0}, // dó³
-						{-1, -1, 0}, // lewo
-					};
+						int possible_kills[4][3] = {
+							{-1, -1, 0}, // góra
+							{-1, -1, 0}, // prawo
+							{-1, -1, 0}, // dó³
+							{-1, -1, 0}, // lewo
+						};
 
-					int x = XYToBoardIndex(game_state.x, 'x');
-					int y = XYToBoardIndex(game_state.y, 'y');
-;					if (moveCanKill(x,y,game_state,board,possible_kills)) {
-						int points = 0;
-						int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2];
-						for (int i = 0; i < 4 ; i++) {
-							if (possible_kills[i][0] == -1 || possible_kills[i][2] == 1) continue;
-							clrSurrounded(surrounded);
-							if (moveKills(possible_kills[i][0], possible_kills[i][1], game_state, board, surrounded, possible_kills)) {
-								for (int j = 0; surrounded[j][0] != -1; j++) {
-									updateBoard(surrounded[j][0], surrounded[j][1], REMOVE_STONE, false);
-									restoreChar(surrounded[j][0] * 2  + board.x_start, surrounded[j][1] + board.y_start, game_state);
-									points++;
+						int x = XYToBoardIndex(game_state.x, 'x');
+						int y = XYToBoardIndex(game_state.y, 'y');
+
+						;					if (moveCanKill(x, y, game_state, board, possible_kills)) {
+							int points = 0;
+							int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2];
+							for (int i = 0; i < 4; i++) {
+								if (possible_kills[i][0] == -1 || possible_kills[i][2] == 1) continue;
+								clrSurrounded(surrounded);
+								if (moveKills(possible_kills[i][0], possible_kills[i][1], game_state, board, surrounded, possible_kills)) {
+									for (int j = 0; surrounded[j][0] != -1; j++) {
+										updateBoard(surrounded[j][0], surrounded[j][1], REMOVE_STONE, false);
+										restoreChar(surrounded[j][0] * 2 + board.x_start, surrounded[j][1] + board.y_start, game_state);
+										points++;
+									}
+									if (points == 1) {
+										game_state.ko_coords[0] = surrounded[0][0];
+										game_state.ko_coords[1] = surrounded[0][1];
+									}
 								}
 							}
+
+							game_state.turn == PLAYER_ONE ? game_state.points_player_one += points : game_state.points_player_two += points;
 						}
-						game_state.turn == PLAYER_ONE ? game_state.points_player_one += points : game_state.points_player_two += points;
+						changeTurn();
+						game_state.x += 2;
 					}
-					changeTurn();
-					game_state.x += 2;
+				}
+			} // 
+			if (keyboard.s == PRESSED) {
+				char file_name_save[MAX_FILE_NAME] = {};
+				keyboard = getFileName(file_name_save, keyboard);
+				if (keyboard.escape != PRESSED) {
+					saveGame(file_name_save);
 				}
 			}
-		}
-		if (keyboard.s == PRESSED) {
-			char file_name_save[MAX_FILE_NAME] = {};
-			keyboard = getFileName(file_name_save, keyboard);
-			if (keyboard.escape != PRESSED) {
-				saveGame(file_name_save);
+			if (keyboard.l == PRESSED) {
+				char file_name_load[MAX_FILE_NAME] = {};
+				keyboard = getFileName(file_name_load, keyboard);
+				if (keyboard.escape != PRESSED) {
+					loadGame(file_name_load, &game_state);
+					drawBoard(game_state);
+				}
 			}
-		}
-		if (keyboard.l == PRESSED) {
-			char file_name_load[MAX_FILE_NAME] = {};
-			keyboard = getFileName(file_name_load, keyboard);
-			if (keyboard.escape != PRESSED) {
-				loadGame(file_name_load, &game_state);
-				drawBoard(game_state);
+			if (keyboard.o == PRESSED) {
+				curr_g_opt = chooseGameSettings(curr_g_opt);
+				if (keyboard.q == PRESSED) break;
+				if (curr_g_opt.save) {
+					printLegend();
+					new_game(curr_g_opt);
+				}
+				else {
+					backgroundColor(console.background_color);
+					printLegend();
+					printPoints(game_state, curr_g_opt);
+					drawBoard(game_state);
+				}
 			}
-		}
-	} while (keyboard.q != PRESSED);
+		} while (keyboard.q != PRESSED);
+	}
 	gotoxy(1, 28);
 	textcolor(TEXT_COLOR);
 }
-
-
 
 void new_coord(char x_or_y) {
 	if (x_or_y == 'y') {
@@ -108,7 +132,7 @@ void intToString(int num, char buff[]) {
 	buff[num_len] = '\0';
 }
 
-void keyboard_handle() {
+struct keyboard_keys keyboard_handle() {
 	int pressed_key;
 	keyboard = { NOT_PRESSED };
 	pressed_key = getch();
@@ -152,6 +176,27 @@ void keyboard_handle() {
 	case NEW_GAME:
 		keyboard.n = PRESSED;
 		break;
+	case SETTINGS:
+		keyboard.o = PRESSED;
+		break;
+	case ONE:
+		keyboard.one = PRESSED;
+		break;
+	case TWO:
+		keyboard.two = PRESSED;
+		break;
+	case THREE:
+		keyboard.three = PRESSED;
+		break;
+	case FOUR:
+		keyboard.four = PRESSED;
+		break;
+	case HENDICAP:
+		keyboard.h = PRESSED;
+		break;
+	case CLSC_GAME:
+		keyboard.c = PRESSED;
+		break;
 	case END_GAME:
 		keyboard.f = PRESSED;
 		break;
@@ -173,12 +218,16 @@ void keyboard_handle() {
 	default:
 		break;
 	}
+	return keyboard;
 }
 
-void new_game() {
+void new_game(struct GameSettings curr_g_opt) {
 	clrPosition();
 	clrBoard();
 	drawBoard(game_state);
+	if (curr_g_opt.handicup == 1) {
+		playHendicap(&game_state);
+	}
 	game_state.x = board.x_start;
 	game_state.y = board.y_start;
 	game_state.points_player_one = 0;
@@ -236,49 +285,63 @@ int XYToBoardIndex(int x_y, char x_or_y) {
 }
 
 bool stoneCanBePlaced(int x, int y) {
+	x = XYToBoardIndex(x, 'x');
+	y = XYToBoardIndex(y, 'y');
+
 	if (game_state.board[y][x] != EMPTY) {
 		return false;
 	}
+
 	int possible_kills[4][3] = {
 		{-1, -1, 0}, // góra
 		{-1, -1, 0}, // prawo
 		{-1, -1, 0}, // dó³
 		{-1, -1, 0}, // lewo
 	};
-	x = XYToBoardIndex(x, 'x');
-	y = XYToBoardIndex(y, 'y');
+
+	int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2];
+	bool can_be = true;
+	bool move_kills = false;
+	game_state.board[y][x] = (game_state.turn == PLAYER_ONE ? STONE_P1 : STONE_P2);
+
 	if (moveCanKill(x, y, game_state, board, possible_kills)) {
 		int points = 0;
-		int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2];
 		for (int i = 0; i < 4; i++) {
 			if (possible_kills[i][0] == -1 || possible_kills[i][2] == 1) continue;
 			clrSurrounded(surrounded);
 			if (moveKills(possible_kills[i][0], possible_kills[i][1], game_state, board, surrounded, possible_kills)) {
-				return true;
+				move_kills = true;
+				if (x == game_state.ko_coords[0] && y == game_state.ko_coords[1]) {
+					can_be = false;
+				}
+				else can_be = true;
+				
 			}
 		}
 	}
-	game_state.board[y][x] = (game_state.turn == PLAYER_ONE ? STONE_P1 : STONE_P2);
-	int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2];
-	clrSurrounded(surrounded);
-	game_state.turn *= -1;
-	if (moveKills(x, y, game_state, board, surrounded, possible_kills)) {
+	if (!move_kills) {
+		clrSurrounded(surrounded);
 		game_state.turn *= -1;
-		suecideAlert();
-		game_state.suecide = 1;
-		game_state.board[y][x] = EMPTY;
-		return false;
+		if (moveKills(x, y, game_state, board, surrounded, possible_kills)) {
+			suecideAlert();
+			game_state.suecide = 1;
+			can_be = false;
+		}
+		game_state.turn *= -1;
 	}
+
 	game_state.board[y][x] = EMPTY;
-	game_state.turn *= -1;
-	return true;
+	
+	if (can_be) {
+		return true;
+	}
+	return false;
 }
 
 void clrBoard() {
 	for (int row = 0; row < board.size; row++)
 		for (int col = 0; col < board.size; col++) {	
 			game_state.board[row][col] =		EMPTY;
-			game_state.board_for_ko[row][col] = EMPTY;
 		}
 }
 
@@ -383,4 +446,31 @@ void clrSurrounded(int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2]) {
 			surrounded[i][j] = -1;
 		}
 	}
+}
+
+void playHendicap(struct game_state_values* curr_state) {
+	clrNewGameAlert();
+	lastLineAlert(BLACK, WHITE, "=> HENDICAP. ABY ROZPOCZAC GRE WCISNIJ 'H' ");
+	curr_state->turn = PLAYER_TWO;
+	printWhosTurnIsIt(*curr_state);
+	do {
+		new_coord('x');
+		new_coord('y');
+		print_position(curr_state->x, curr_state->y);
+		drawCursor(curr_state->x, curr_state->y, CURSOR_COLOR_NORMAL);
+		keyboard_handle();
+		if (keyboard.i == PRESSED) {
+			if (stoneCanBePlaced(game_state.x, game_state.y)) {
+				drawCursor(curr_state->x, curr_state->y, CURSOR_COLOR_ACTIVE);
+				confirm();
+				if (keyboard.enter == PRESSED) {
+					placeStone(curr_state->x, curr_state->y, curr_state->turn);
+					updateBoard(curr_state->x, curr_state->y, PLACE_STONE, true);
+					curr_state->x += 2;
+				}
+			}
+		}
+	} while (keyboard.h != PRESSED && keyboard.q != PRESSED);
+	colorSaveLine(console.background_color);
+	restoreChar(curr_state->x, curr_state->y, *curr_state);
 }
