@@ -5,18 +5,24 @@ using namespace std;
 #ifndef GRAGO_H
 #define GRAGO_H
 
+// pozycja legendy i planszy
 #define RIGHT_POS	0
 #define LEFT_POS	1
 
+// pozycje startowe na osi x i y planszy
 #define RIGHT_POS_X_START	75
 #define LEFT_POS_X_START	10
 #define Y_START				5
 
+// wielkosc planszy
 #define BOARD_SIZE 19
 
+// wielkosc konsoli
 #define CONSOLE_WIDTH	120
 #define CONSOLE_HEIGHT	30
 
+// stale znakowe do rozpoznawania 
+// klikniêtych przycisków
 #define UP_ARROW	0x48
 #define DOWN_ARROW	0x50
 #define LEFT_ARROW	0x4b
@@ -39,20 +45,26 @@ using namespace std;
 #define BACKSPACE	0x08
 #define SPACE		0x20
 
+// rozpoznaj kiedy zosta³a klikniêta 
+// strza³ka
 #define SPECIAL_CHARACTER 0
 
+// klikniêto / nie klikniêto przycisku
 #define PRESSED		1
 #define NOT_PRESSED 0
 
+// kolory gry
 #define BOARD_COLOR			DARKGRAY
 #define CURSOR_COLOR_NORMAL	BLUE
 #define CURSOR_COLOR_ACTIVE	RED
 #define TEXT_COLOR			BLACK
 #define ALERT_COLOR			RED
 
+// gracze
 #define PLAYER_ONE 1
 #define PLAYER_TWO -1
 
+// znaki z których zbudowana jest plansza
 #define CROSS				197
 #define LINE				196
 #define TOP_BORDER			194
@@ -64,9 +76,11 @@ using namespace std;
 #define BOTTOM_RIGHT_CORNER 217
 #define BOTTOM_LEFT_CORNER	192
 
+// znaki kursora i kamieni
 #define STONE_CHAR	254
 #define CURSOR_CHAR 254
 
+// maksymalna dlugosc bufora do nazwy pliku
 #define MAX_FILE_NAME 30
 
 static struct GameSettings {
@@ -134,7 +148,7 @@ static struct game_state_values {
 	int turn =									PLAYER_ONE;
 	int board[BOARD_SIZE][BOARD_SIZE] =			{0};
 	int ko_coords[2] =							{-1,-1};
-	int suecide =								0;
+	int alert =									0;
 
 } game_state;
 
@@ -144,51 +158,81 @@ static struct Legend {
 } legend;
 
 
-
-// DO POPRAWY
 static struct Saves { 
 	int alert_to_clear = 0;
 } saves;
 
-// draw board on chosen console side
 void drawBoard(struct game_state_values curr_state);
+
 void restoreChar(int x, int y, struct game_state_values curr_state);
+
 void game(struct GameSettings g_opt);
+
 void new_coord(char x_or_y);
+
 void print_position(int x, int y);
+
 void intToString(int num, char buff[]);
+
 struct keyboard_keys keyboard_handle(void);
+
 void new_game(struct GameSettings g_opt);
+
 void printLegend(void);
+
 void putBoardChar(int row, int col);
+
 void backgroundColor(int new_color);
+
 void drawCursor(int x, int y, int cursor_color);
+
 void confirm(void);
+
 void placeStone(int x, int y, int turn);
+
 void changeTurn(void);
+
 void updateBoard(int x, int y, UpdateBoard_actions action, bool is_position);
+
 void putCorrectCharOnBoard(int row, int col, struct game_state_values curr_state);
+
 int XYToBoardIndex(int x_y, char x_or_y);
+
 bool stoneCanBePlaced(int x, int y);
+
 void printWhosTurnIsIt(struct game_state_values curr_state);
+
 void newGameAlert(void);
+
 void clrBoard(void);
+
 void clrNewGameAlert(void);
+
 struct keyboard_keys getFileName(char file_name[30], struct keyboard_keys curr_keyboard_state);
+
 void saveGame(char file_name[30]);
+
 void colorSaveLine(int color);
+
 int canBeInFileName(int c);
+
 void backspaceHandle(char file_name[30], int* x_pos, int* file_name_index);
+
 void clrPosition(void);
+
 void loadGame(char file_name[MAX_FILE_NAME], struct game_state_values *curr_value);
+
 void lastLineAlert(int background_color, int text_color, const char* message);
+
 void printPoints(struct game_state_values curr_state, struct GameSettings curr_g_opt);
+
 bool moveCanKill(
 	int x,
 	int y,
 	struct game_state_values curr_state,
 	struct board_opt curr_board,
 	int possible_kills[4][3]);
+
 bool moveKills(
 	int x,
 	int y,
@@ -196,9 +240,14 @@ bool moveKills(
 	struct board_opt curr_board,
 	int surrounded[BOARD_SIZE * BOARD_SIZE / 2][2],
 	int possible_kills[4][3]);
+
 void clrSurrounded(int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2]);
-void suecideAlert(void);
+
+void gameAlert(const char message[]);
+
 void clrSuecide(void);
+
 struct GameSettings chooseGameSettings(struct GameSettings g_opt);
-void playHendicap(struct game_state_values* curr_value);;
+
+void playHendicap(struct game_state_values* curr_value);
 #endif 

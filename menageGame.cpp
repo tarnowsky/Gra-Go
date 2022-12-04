@@ -43,8 +43,8 @@ void game(struct GameSettings curr_g_opt) {
 
 						int x = XYToBoardIndex(game_state.x, 'x');
 						int y = XYToBoardIndex(game_state.y, 'y');
-
-						;					if (moveCanKill(x, y, game_state, board, possible_kills)) {
+						
+						if (moveCanKill(x, y, game_state, board, possible_kills)) {
 							int points = 0;
 							int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2];
 							for (int i = 0; i < 4; i++) {
@@ -69,7 +69,7 @@ void game(struct GameSettings curr_g_opt) {
 						game_state.x += 2;
 					}
 				}
-			} // 
+			} 
 			if (keyboard.s == PRESSED) {
 				char file_name_save[MAX_FILE_NAME] = {};
 				keyboard = getFileName(file_name_save, keyboard);
@@ -140,9 +140,9 @@ struct keyboard_keys keyboard_handle() {
 		colorSaveLine(console.background_color);
 		saves.alert_to_clear = 0;
 	}
-	if (game_state.suecide) {
+	if (game_state.alert) {
 		clrSuecide();
-		game_state.suecide = 0;
+		game_state.alert = 0;
 	}
 
 	if (pressed_key == SPECIAL_CHARACTER) {
@@ -312,6 +312,8 @@ bool stoneCanBePlaced(int x, int y) {
 			if (moveKills(possible_kills[i][0], possible_kills[i][1], game_state, board, surrounded, possible_kills)) {
 				move_kills = true;
 				if (x == game_state.ko_coords[0] && y == game_state.ko_coords[1]) {
+					gameAlert("Ruch niedozwolony zgodnie z zasada Ko.");
+					game_state.alert = 1;
 					can_be = false;
 				}
 				else can_be = true;
@@ -323,8 +325,8 @@ bool stoneCanBePlaced(int x, int y) {
 		clrSurrounded(surrounded);
 		game_state.turn *= -1;
 		if (moveKills(x, y, game_state, board, surrounded, possible_kills)) {
-			suecideAlert();
-			game_state.suecide = 1;
+			gameAlert("Ruch niedozwolony. Samobojstwo.");
+			game_state.alert = 1;
 			can_be = false;
 		}
 		game_state.turn *= -1;
@@ -393,6 +395,8 @@ void saveGame(char file_name[MAX_FILE_NAME]) {
 	fprintf(fp, "%d ", game_state.points_player_one);
 	fprintf(fp, "%d ", game_state.points_player_two);
 	fprintf(fp, "%d ", game_state.turn);
+	fprintf(fp, "%d ", game_state.ko_coords[0]);
+	fprintf(fp, "%d ", game_state.ko_coords[1]);
 	for (int i = 0; i < board.size; i++)
 		for (int j = 0; j < board.size; j++)
 			fprintf(fp, "%d ", game_state.board[i][j]);
@@ -422,22 +426,29 @@ void backspaceHandle(char file_name[MAX_FILE_NAME], int* x_pos, int* file_name_i
 }
 
 void loadGame(char file_name[MAX_FILE_NAME], struct game_state_values *curr_value) {
-	// DO ZROBIENIA NIE MOZESZ WPISAC NAZWY NIE ISTNIEJACEGO PLIKU
 	FILE* fp;
 	FILE** fpp = &fp;
 	fopen_s(fpp, file_name, "r");
-	fscanf_s(fp, "%d %d %d %d %d",
-		&(curr_value->x),
-		&(curr_value->y),
-		&(curr_value->points_player_one),
-		&(curr_value->points_player_two),
-		&(curr_value->turn));
-	for (int i = 0; i < board.size; i++)
-		for (int j = 0; j < board.size; j++)
-			fscanf_s(fp, "%d", &(curr_value->board[i][j]));
-	lastLineAlert(GREEN, WHITE, "Zaladowano pomyslnie.");
-	saves.alert_to_clear = 1;
-	fclose(fp);
+	if (*fpp) {
+		fscanf_s(fp, "%d %d %d %d %d %d %d",
+			&(curr_value->x),
+			&(curr_value->y),
+			&(curr_value->points_player_one),
+			&(curr_value->points_player_two),
+			&(curr_value->turn),
+			&(curr_value->ko_coords[0]),
+			&(curr_value->ko_coords[1]));
+		for (int i = 0; i < board.size; i++)
+			for (int j = 0; j < board.size; j++)
+				fscanf_s(fp, "%d", &(curr_value->board[i][j]));
+		lastLineAlert(GREEN, WHITE, "Zaladowano pomyslnie.");
+		saves.alert_to_clear = 1;
+		fclose(fp);
+	}
+	else {
+		lastLineAlert(RED, WHITE, "Blad. Sprawdz czy plik o podanej nazwie istnieje.");
+		saves.alert_to_clear = 1;
+	}
 }
 
 void clrSurrounded(int surrounded[(BOARD_SIZE * BOARD_SIZE) / 2][2]) {

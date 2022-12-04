@@ -203,17 +203,17 @@ void newGameAlert() {
 	cputs("Kontynuowac? TAK [ENTER] / NIE [ESCAPE]");
 }
 
-void suecideAlert() {
+void gameAlert(const char message[]) {
 	textcolor(ALERT_COLOR);
 	textbackground(console.background_color);
 	gotoxy(board.x_start, board.y_start + board.size + 3);
-	cputs("Ruch niedozwolony. Samobojstwo.");
+	cputs(message);
 }
 
 void clrSuecide() {
 	textbackground(console.background_color);
 	gotoxy(board.x_start, board.y_start + board.size + 3);
-	cputs("                               ");
+	cputs("                                            ");
 }
 
 void clrNewGameAlert() {
