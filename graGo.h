@@ -1,5 +1,4 @@
 #include "conio2.h"
-#include <stdio.h>
 
 #ifndef GRAGO_H
 #define GRAGO_H
@@ -21,7 +20,7 @@
 #define CONSOLE_HEIGHT	30
 
 // stale znakowe do rozpoznawania 
-// klikniêtych przycisków
+// klikniï¿½tych przyciskï¿½w
 #define UP_ARROW	0x48
 #define DOWN_ARROW	0x50
 #define LEFT_ARROW	0x4b
@@ -44,11 +43,11 @@
 #define BACKSPACE	0x08
 #define SPACE		0x20
 
-// rozpoznaj kiedy zosta³a klikniêta 
-// strza³ka
+// rozpoznaj kiedy zostaï¿½a klikniï¿½ta 
+// strzaï¿½ka
 #define SPECIAL_CHARACTER 0
 
-// klikniêto / nie klikniêto przycisku
+// klikniï¿½to / nie klikniï¿½to przycisku
 #define PRESSED		1
 #define NOT_PRESSED 0
 
@@ -64,7 +63,7 @@
 #define PLAYER_ONE 1
 #define PLAYER_TWO -1
 
-// znaki z których zbudowana jest plansza
+// znaki z ktï¿½rych zbudowana jest plansza
 #define CROSS				197
 #define LINE				196
 #define TOP_BORDER			194
@@ -122,15 +121,15 @@ static struct Console
 } console;
 
 static struct keyboard_keys {
-	int enter =		NOT_PRESSED; // potwierdŸ wybór, zakoñcz turê
-	int arrows =	NOT_PRESSED; // poruszanie (góra, dó³, lewo, prawo)
+	int enter =		NOT_PRESSED; // potwierdï¿½ wybï¿½r, zakoï¿½cz turï¿½
+	int arrows =	NOT_PRESSED; // poruszanie (gï¿½ra, dï¿½, lewo, prawo)
 	int q =			NOT_PRESSED; // zamknij program
 	int n =			NOT_PRESSED; // nowa gra
-	int escape =	NOT_PRESSED; // anuluj obecn¹ akcjê
-	int i =			NOT_PRESSED; // po³ó¿ kamieñ na planszy
+	int escape =	NOT_PRESSED; // anuluj obecnï¿½ akcjï¿½
+	int i =			NOT_PRESSED; // poï¿½ï¿½ kamieï¿½ na planszy
 	int s =			NOT_PRESSED; // zapisz stan gry
 	int l =			NOT_PRESSED; // zapisz stan gry
-	int f =			NOT_PRESSED; // zakoñcz grê
+	int f =			NOT_PRESSED; // zakoï¿½cz grï¿½
 	int h =			NOT_PRESSED; // gra z handicapem
 	int c =			NOT_PRESSED; // gra klasyczne
 	int o =			NOT_PRESSED; // opcje
