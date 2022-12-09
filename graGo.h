@@ -1,6 +1,5 @@
 #include "conio2.h"
-#include <iostream>
-using namespace std;
+#include <stdio.h>
 
 #ifndef GRAGO_H
 #define GRAGO_H
@@ -59,6 +58,7 @@ using namespace std;
 #define CURSOR_COLOR_ACTIVE	RED
 #define TEXT_COLOR			BLACK
 #define ALERT_COLOR			RED
+#define CURSOR_ON_STONE		LIGHTGREEN
 
 // gracze
 #define PLAYER_ONE 1
@@ -153,8 +153,8 @@ static struct game_state_values {
 } game_state;
 
 static struct Legend {
-	int x_start = board.position == RIGHT_POS ? LEFT_POS_X_START : RIGHT_POS_X_START - 15;
-	int y_start = Y_START - 1;
+	int x_start = board.position == RIGHT_POS ? LEFT_POS_X_START : RIGHT_POS_X_START + 5;
+	int y_start = Y_START-1;
 } legend;
 
 

@@ -1,6 +1,5 @@
 #include "graGo.h"
 
-
 void drawBoard(struct game_state_values curr_state) {
 	textcolor(board.color);
 	textbackground(console.background_color);
@@ -50,48 +49,72 @@ void printLegend() {
 	textbackground(console.background_color);
 	gotoxy(legend.x_start, legend.y_start);
 	cputs("== LEGENDA ==");
+
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("strzalki: poruszanie kursorem po planszy");
+	cputs("Michal Tarnowski, 193324");
+	y_offset++;
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("q: zamkniecie programu");
+	cputs("strzalki: -- poruszanie");
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("n: rozpoczecie nowej gry");
+	cputs("q: --------- zamknij program");
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("enter: potwierdzenie wyboru i zakonczenie tury gracza");
+	cputs("n: --------- nowa gra");
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("esc: anulowanie obecnej akcji");
+	cputs("enter: ----- potwierdz");
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("i: polozenie kamienia na planszy");
+	cputs("esc: ------- anuluj");
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("s: zapis stanu gry");
+	cputs("i: --------- poloz kamien");
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("l: wczytanie stanu gry");
+	cputs("s: --------- zapisz");
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("f: zakonczenie gry");
+	cputs("l: --------- wczytaj");
+	/*gotoxy(legend.x_start, legend.y_start + y_offset++);
+	cputs("f: --------- zakoncz gre");*/
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("o: opcje");
-	gotoxy(legend.x_start, legend.y_start + y_offset++);
+	cputs("o: --------- opcje");
+
+	y_offset++;
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
 	textcolor(WHITE);
 	putch(STONE_CHAR);
 	textcolor(TEXT_COLOR);
-	cputs(" Gracz 1");
+	cputs(" ---------- Gracz 1");
 	gotoxy(legend.x_start, legend.y_start + y_offset++);
 	textcolor(BLACK);
 	putch(STONE_CHAR);
 	textcolor(TEXT_COLOR);
-	cputs(" Gracz 2");
+	cputs(" ---------- Gracz 2");
+
+	y_offset++;
+	gotoxy(legend.x_start, legend.y_start + y_offset++);
+	textcolor(CURSOR_COLOR_NORMAL);
+	putch(STONE_CHAR);
+	textcolor(TEXT_COLOR);
+	cputs(" ---------- Kursor");
+	gotoxy(legend.x_start, legend.y_start + y_offset++);
+	textcolor(CURSOR_COLOR_ACTIVE);
+	putch(STONE_CHAR);
+	textcolor(TEXT_COLOR);
+	cputs(" ---------- Potwierdz / wroc");
+	gotoxy(legend.x_start, legend.y_start + y_offset++);
+	textcolor(CURSOR_ON_STONE);
+	putch(STONE_CHAR);
+	textcolor(TEXT_COLOR);
+	cputs(" ---------- Na kamieniu");
+
+	y_offset++;
+
 }
 
 void printPoints(struct game_state_values curr_state, struct GameSettings curr_g_opt) {
-	int y_offset = 16;
+	int y_offset = 0;
 	char buff[4] = {};
 	textcolor(TEXT_COLOR);
 	textbackground(console.background_color);
-	gotoxy(legend.x_start, legend.y_start + y_offset++);
-	cputs("== PUNKTACJA ==");
+	gotoxy(board.x_start + 15, board.y_start + board.size + 1);
+	cputs("Punkty:  ");
 	y_offset++;
-	gotoxy(legend.x_start, legend.y_start + y_offset++);
 	textcolor(WHITE);
 	putch(STONE_CHAR);
 	putch(SPACE);
@@ -101,7 +124,7 @@ void printPoints(struct game_state_values curr_state, struct GameSettings curr_g
 	if (curr_g_opt.handicup == 1) {
 		cputs(".5");
 	}
-	gotoxy(legend.x_start, legend.y_start + y_offset++);
+	cputs("  ");
 	textcolor(BLACK);
 	putch(STONE_CHAR);
 	putch(SPACE);
@@ -196,7 +219,7 @@ void newGameAlert() {
 	textcolor(ALERT_COLOR);
 	textbackground(console.background_color);
 	gotoxy(board.x_start, board.y_start + board.size + y_offset++);
-	cputs("Za chwile rozpoczniesz nowa gre.");
+	cputs("Za chwile rozpoczniesz nowa gre.            ");
 	gotoxy(board.x_start, board.y_start + board.size + y_offset++);
 	cputs("Wszystkie niezapisane dane zostana utracone.");
 	gotoxy(board.x_start, board.y_start + board.size + y_offset++);
@@ -218,10 +241,13 @@ void clrSuecide() {
 
 void clrNewGameAlert() {
 	int y_offset = 1;
+	textbackground(console.background_color);
 	gotoxy(board.x_start, board.y_start + board.size + y_offset++);
-	delline();
-	delline();
-	delline();
+	cputs("                                ");
+	gotoxy(board.x_start, board.y_start + board.size + y_offset++);
+	cputs("                                            ");
+	gotoxy(board.x_start, board.y_start + board.size + y_offset++);
+	cputs("                                       ");
 }
 
 void colorSaveLine(int color) {

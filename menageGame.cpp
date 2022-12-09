@@ -1,6 +1,4 @@
-#include "menageGame.h"
-#include <stdio.h>
-
+#include "graGo.h"
 
 void game(struct GameSettings curr_g_opt) {
 	curr_g_opt.settings_chosen = 1;
@@ -8,13 +6,23 @@ void game(struct GameSettings curr_g_opt) {
 		printLegend();
 		new_game(curr_g_opt);
 		do {
+			// obsluz zamkniecie programu
 			if (keyboard.q == PRESSED) break;
+			// zaaktualizuj punkty
 			printPoints(game_state, curr_g_opt);
+			// zaaktualizuj ture
 			printWhosTurnIsIt(game_state);
+			// obsluz polozenie kursora na planszy
 			new_coord('x');
 			new_coord('y');
+			// wypisz pozycje na planszy
 			print_position(game_state.x, game_state.y);
-			drawCursor(game_state.x, game_state.y, CURSOR_COLOR_NORMAL);
+			// narysuj kursor
+			if (game_state.board[XYToBoardIndex(game_state.y, 'y')][XYToBoardIndex(game_state.x, 'x')] != EMPTY) {
+				drawCursor(game_state.x, game_state.y, CURSOR_ON_STONE);
+			}
+			else drawCursor(game_state.x, game_state.y, CURSOR_COLOR_NORMAL);
+			// czekaj na wejscie
 			keyboard = keyboard_handle();
 			if (keyboard.n == PRESSED) {
 				newGameAlert();
@@ -66,7 +74,6 @@ void game(struct GameSettings curr_g_opt) {
 							game_state.turn == PLAYER_ONE ? game_state.points_player_one += points : game_state.points_player_two += points;
 						}
 						changeTurn();
-						game_state.x += 2;
 					}
 				}
 			} 
@@ -468,16 +475,18 @@ void playHendicap(struct game_state_values* curr_state) {
 		new_coord('x');
 		new_coord('y');
 		print_position(curr_state->x, curr_state->y);
-		drawCursor(curr_state->x, curr_state->y, CURSOR_COLOR_NORMAL);
+		if (curr_state->board[XYToBoardIndex(curr_state->y, 'y')][XYToBoardIndex(curr_state->x, 'x')] != EMPTY) {
+			drawCursor(curr_state->x, curr_state->y, CURSOR_ON_STONE);
+		}
+		else drawCursor(curr_state->x, curr_state->y, CURSOR_COLOR_NORMAL);
 		keyboard_handle();
 		if (keyboard.i == PRESSED) {
-			if (stoneCanBePlaced(game_state.x, game_state.y)) {
+			if (stoneCanBePlaced(curr_state->x, curr_state->y)) {
 				drawCursor(curr_state->x, curr_state->y, CURSOR_COLOR_ACTIVE);
 				confirm();
 				if (keyboard.enter == PRESSED) {
 					placeStone(curr_state->x, curr_state->y, curr_state->turn);
 					updateBoard(curr_state->x, curr_state->y, PLACE_STONE, true);
-					curr_state->x += 2;
 				}
 			}
 		}
