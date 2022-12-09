@@ -43,9 +43,9 @@ void game(struct GameSettings curr_g_opt) {
 						updateBoard(game_state.x, game_state.y, PLACE_STONE, true);
 
 						int possible_kills[4][3] = {
-							{-1, -1, 0}, // góra
+							{-1, -1, 0}, // gï¿½ra
 							{-1, -1, 0}, // prawo
-							{-1, -1, 0}, // dó³
+							{-1, -1, 0}, // dï¿½
 							{-1, -1, 0}, // lewo
 						};
 
@@ -300,9 +300,9 @@ bool stoneCanBePlaced(int x, int y) {
 	}
 
 	int possible_kills[4][3] = {
-		{-1, -1, 0}, // góra
+		{-1, -1, 0}, // gï¿½ra
 		{-1, -1, 0}, // prawo
-		{-1, -1, 0}, // dó³
+		{-1, -1, 0}, // dï¿½
 		{-1, -1, 0}, // lewo
 	};
 
@@ -312,7 +312,6 @@ bool stoneCanBePlaced(int x, int y) {
 	game_state.board[y][x] = (game_state.turn == PLAYER_ONE ? STONE_P1 : STONE_P2);
 
 	if (moveCanKill(x, y, game_state, board, possible_kills)) {
-		int points = 0;
 		for (int i = 0; i < 4; i++) {
 			if (possible_kills[i][0] == -1 || possible_kills[i][2] == 1) continue;
 			clrSurrounded(surrounded);
@@ -371,7 +370,7 @@ struct keyboard_keys getFileName(char file_name[MAX_FILE_NAME], struct keyboard_
 		if (canBeInFileName(c)) {
 			putch(c);
 			x++;
-			file_name[i++] = c;
+			file_name[i++] = (char)c;
 		}
 	}
 	if (c == ESCAPE) {

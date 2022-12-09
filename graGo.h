@@ -1,4 +1,5 @@
 #include "conio2.h"
+#include <stdio.h>
 
 #ifndef GRAGO_H
 #define GRAGO_H
@@ -93,13 +94,13 @@ static struct GameSettings {
 	int save = 0;
 } g_opt;
 
-static enum UpdateBoard_actions {
+enum UpdateBoard_actions {
 	PLACE_STONE,
 	REMOVE_STONE,
 	PLACE_CURSOR,
 };
 
-static enum BoardElements {
+enum BoardElements {
 	EMPTY,
 	STONE_P1,
 	STONE_P2
